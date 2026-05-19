@@ -6,6 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 import java.util.List;
 
 @RestController
@@ -14,12 +17,24 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@RequestBody User user) {
         return userRepository.save(user);
     }
+
+    @GetMapping("/search")
+    public List<?> search(@RequestParam String name) {
+
+        // SQL Injection vulnerable
+        String query = "SELECT * FROM users WHERE name = '" + name + "'";
+
+        return entityManager.createNativeQuery(query).getResultList();
+    }
+
 
     @GetMapping
     public List<User> getUsers() {

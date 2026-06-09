@@ -29,12 +29,19 @@ public class UserController {
     @GetMapping("/search")
     public List<?> search(@RequestParam String name) {
 
-        // SQL Injection vulnerable
         String query = "SELECT * FROM users WHERE name = '" + name + "'";
 
         return entityManager.createNativeQuery(query).getResultList();
     }
 
+
+    @GetMapping("/search2")
+    public List<?> search2(@RequestParam String name) {
+
+        String query = "SELECT * FROM users WHERE name = '" + name + "'";
+
+        return entityManager.createNativeQuery(query).getResultList();
+    }
 
     @GetMapping
     public List<User> getUsers() {

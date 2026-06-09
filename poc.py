@@ -75,7 +75,7 @@ def get_last_commit_diff() -> str:
         print("Fallback: usando HEAD directo")
 
         result = subprocess.run(
-            ["git", "show", "--format=", "HEAD"],
+            ["git", "diff", "HEAD"],
             capture_output=True,
             text=True
         )

@@ -79,6 +79,7 @@ def get_last_commit_diff() -> str:
             capture_output=True,
             text=True
         )
+        print(result)
         return result.stdout
     except FileNotFoundError:
         sys.exit(1)

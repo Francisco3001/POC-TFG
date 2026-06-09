@@ -13,7 +13,7 @@ import os
 OLLAMA_URL = os.getenv("OLLAMA_URL")
 
 MODEL = "qwen2.5-coder:14b"
-#asd
+#asd ssssssssss
 ALLOWED_EXTENSIONS = [
     ".py", ".js", ".ts", ".jsx", ".tsx",
     ".java", ".kt", ".go", ".rb", ".php",

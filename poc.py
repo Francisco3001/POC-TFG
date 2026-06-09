@@ -13,7 +13,7 @@ import sys
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "qwen2.5-coder:14b"
 
-ALLOWED_EXTENSIONS = [ #extenciones que levanta del diff
+ALLOWED_EXTENSIONS = [
     ".py", ".js", ".ts", ".jsx", ".tsx",
     ".java", ".kt", ".go", ".rb", ".php",
     ".c", ".cpp", ".h", ".cs", ".rs",
@@ -77,7 +77,6 @@ def get_last_commit_diff() -> str:
 
 
 def filter_diff(diff: str) -> str:
-    """Filtra el diff dejando solo bloques de archivos con extensiones permitidas."""
     filtered = []
     current_block = []
     current_allowed = False
@@ -89,7 +88,9 @@ def filter_diff(diff: str) -> str:
             current_block = [line]
             current_allowed = any(line.endswith(ext) for ext in ALLOWED_EXTENSIONS)
         else:
-            current_block.append(line)
+            # Descartar líneas eliminadas (no analizar código que ya no existe)
+            if not line.startswith("-"):
+                current_block.append(line)
 
     if current_allowed and current_block:
         filtered.extend(current_block)

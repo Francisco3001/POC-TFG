@@ -76,10 +76,10 @@ def get_last_commit_diff() -> str:
             diff = result.stdout.strip()
         return diff
     except subprocess.CalledProcessError as e:
-        print("START SCRIPT")
+        print("START SCRIPT1")
         sys.exit(1)
     except FileNotFoundError:
-        print("START SCRIPT")
+        print("START SCRIPT2")
         sys.exit(1)
 
 

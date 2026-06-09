@@ -11,7 +11,10 @@ import requests
 import sys
 import os
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://181.95.169.13:11434/api/generate")
+OLLAMA_URL = os.getenv("OLLAMA_URL")
+
+if not OLLAMA_URL:
+    raise Exception("OLLAMA_URL not set")
 MODEL = "qwen2.5-coder:14b"
 
 ALLOWED_EXTENSIONS = [

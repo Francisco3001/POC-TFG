@@ -53,7 +53,6 @@ Si no hay vulnerabilidades, responde con un array vacío: []
 
 def get_last_commit_diff() -> str:
     """Obtiene el diff del último commit en el repo actual."""
-    print("START SCRIPT")
     try:
         result = subprocess.run(
             ["git", "diff", "HEAD~1", "HEAD"],
@@ -82,7 +81,6 @@ def get_last_commit_diff() -> str:
         )
         return result.stdout
     except FileNotFoundError:
-        print("START SCRIPT2")
         sys.exit(1)
 
 

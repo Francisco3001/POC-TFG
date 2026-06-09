@@ -52,35 +52,43 @@ Si no hay vulnerabilidades, responde con un array vacío: []
 
 
 def get_last_commit_diff() -> str:
+    """Obtiene el diff del último commit."""
+
     try:
-        # intento normal
-        result = subprocess.run(
-            ["git", "diff", "HEAD^", "HEAD"],
+        # Debug útil para GitHub Actions
+        commits = subprocess.run(
+            ["git", "log", "--oneline", "-5"],
             capture_output=True,
-            text=True,
-            check=True
+            text=True
         )
 
-        if result.stdout.strip():
+        print("COMMITS:")
+        print(commits.stdout)
+
+        # Diff último commit
+        result = subprocess.run(
+            ["git", "diff", "HEAD~1", "HEAD"],
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode == 0 and result.stdout.strip():
             return result.stdout
 
-        # fallback mínimo (solo archivos)
+        print("HEAD~1 no disponible o diff vacío")
+
+        # Fallback: mostrar contenido del commit actual
         result = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD^", "HEAD"],
+            ["git", "show", "--format=", "HEAD"],
             capture_output=True,
             text=True
         )
 
         return result.stdout
 
-    except:
-        # último fallback ultra ligero
-        result = subprocess.run(
-            ["git", "diff", "HEAD"],
-            capture_output=True,
-            text=True
-        )
-        return result.stdout
+    except Exception as e:
+        print("ERROR OBTENIENDO DIFF:", e)
+        return ""
 
 
 def filter_diff(diff: str) -> str:

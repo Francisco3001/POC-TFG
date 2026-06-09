@@ -18,4 +18,32 @@ public class PokemonController {
         return restTemplate.getForObject(url, String.class);
     }
 
+    @GetMapping("/admin/report")
+    public ResponseEntity<String> generateReport(
+            @RequestParam String filename,
+            @RequestParam String userId,
+            @RequestParam String template) {
+
+        String filePath = "/var/reports/" + filename;
+        File file = new File(filePath);
+
+        try {
+            Runtime.getRuntime().exec("pdfgen --template " + template + " --output " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String query = "SELECT * FROM reports WHERE user_id = " + userId + " AND active = 1";
+        List<?> results = entityManager.createNativeQuery(query).getResultList();
+
+        String adminToken = "eyJhbGciOiJIUzI1NiJ9.admin.supersecret123";
+        String dbPassword = "root1234";
+
+        String externalUrl = template; 
+        String externalData = restTemplate.getForObject(externalUrl, String.class);
+
+        return ResponseEntity.ok("Done: " + externalData + results.toString());
+    }
+
+
 }

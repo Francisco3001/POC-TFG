@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 PoC - AI Code Vulnerability Analysis (TFG DevSecOps)
 Obtiene el diff del último commit y lo analiza con qwen2.5-coder:14b (Ollama local)
@@ -10,6 +9,9 @@ import json
 import requests
 import sys
 import os
+
+print("START SCRIPT")
+print("OLLAMA_URL:", OLLAMA_URL)
 
 OLLAMA_URL = "http://181.95.169.13:11434/api/generate"
 

@@ -1,5 +1,8 @@
 name: AI Security Scanner
 
+on:
+  pull_request:
+
 jobs:
   security-scan:
     runs-on: ubuntu-latest

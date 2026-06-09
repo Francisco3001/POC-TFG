@@ -10,10 +10,10 @@ import requests
 import sys
 import os
 
+OLLAMA_URL = "http://181.95.169.13:11434/api/generate"
+
 print("START SCRIPT")
 print("OLLAMA_URL:", OLLAMA_URL)
-
-OLLAMA_URL = "http://181.95.169.13:11434/api/generate"
 
 if not OLLAMA_URL:
     raise Exception("OLLAMA_URL not set")

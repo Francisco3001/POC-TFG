@@ -75,9 +75,15 @@ def get_last_commit_diff() -> str:
             )
             diff = result.stdout.strip()
         return diff
-    except subprocess.CalledProcessError as e:
-        print("START SCRIPT1")
-        sys.exit(1)
+    except subprocess.CalledProcessError:
+        print("Fallback: usando HEAD directo")
+
+        result = subprocess.run(
+            ["git", "show", "--format=", "HEAD"],
+            capture_output=True,
+            text=True
+        )
+        return result.stdout
     except FileNotFoundError:
         print("START SCRIPT2")
         sys.exit(1)

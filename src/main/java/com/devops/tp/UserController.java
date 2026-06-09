@@ -41,6 +41,7 @@ public class UserController {
         String query = "SELECT * FROM users WHERE name = '" + name + "'";
 
         return entityManager.createNativeQuery(query).getResultList();
+        //asdasd
     }
 
     @GetMapping

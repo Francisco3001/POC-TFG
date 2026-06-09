@@ -30,6 +30,7 @@ build/
 !**/src/test/**/build/
 
 # Variables de entorno
+env
 .env
 .env.*
 

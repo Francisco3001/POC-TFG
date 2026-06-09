@@ -52,36 +52,35 @@ Si no hay vulnerabilidades, responde con un array vacío: []
 
 
 def get_last_commit_diff() -> str:
-    """Obtiene el diff del último commit en el repo actual."""
     try:
+        # intento normal
         result = subprocess.run(
-            ["git", "diff", "HEAD~1", "HEAD"],
+            ["git", "diff", "HEAD^", "HEAD"],
             capture_output=True,
             text=True,
             check=True
         )
-        diff = result.stdout.strip()
-        if not diff:
-            # Si solo hay un commit (repo nuevo), diff contra el árbol vacío
-            result = subprocess.run(
-                ["git", "show", "--format=", "HEAD"],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            diff = result.stdout.strip()
-        return diff
-    except subprocess.CalledProcessError:
-        print("Fallback: usando HEAD directo")
 
+        if result.stdout.strip():
+            return result.stdout
+
+        # fallback mínimo (solo archivos)
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD^", "HEAD"],
+            capture_output=True,
+            text=True
+        )
+
+        return result.stdout
+
+    except:
+        # último fallback ultra ligero
         result = subprocess.run(
             ["git", "diff", "HEAD"],
             capture_output=True,
             text=True
         )
         return result.stdout
-    except FileNotFoundError:
-        sys.exit(1)
 
 
 def filter_diff(diff: str) -> str:

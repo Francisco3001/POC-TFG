@@ -174,6 +174,9 @@ def validate_and_clean(vulns: list) -> list[dict]:
 
 def main():
     diff = get_last_commit_diff()
+    print("DIFF:")
+    print(diff)
+    print("LEN:", len(diff))
     diff = filter_diff(diff)
     raw_vulns = analyze_with_ollama(diff)
     vulns = validate_and_clean(raw_vulns)

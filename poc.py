@@ -15,9 +15,6 @@ OLLAMA_URL = "http://181.95.169.13:11434/api/generate"
 print("START SCRIPT")
 print("OLLAMA_URL:", OLLAMA_URL)
 
-if not OLLAMA_URL:
-    raise Exception("OLLAMA_URL not set")
-
 MODEL = "qwen2.5-coder:14b"
 
 ALLOWED_EXTENSIONS = [
@@ -59,6 +56,7 @@ Si no hay vulnerabilidades, responde con un array vacío: []
 
 def get_last_commit_diff() -> str:
     """Obtiene el diff del último commit en el repo actual."""
+    print("START SCRIPT")
     try:
         result = subprocess.run(
             ["git", "diff", "HEAD~1", "HEAD"],
@@ -78,8 +76,10 @@ def get_last_commit_diff() -> str:
             diff = result.stdout.strip()
         return diff
     except subprocess.CalledProcessError as e:
+        print("START SCRIPT")
         sys.exit(1)
     except FileNotFoundError:
+        print("START SCRIPT")
         sys.exit(1)
 
 

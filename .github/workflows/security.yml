@@ -25,4 +25,6 @@ jobs:
       - name: Run AI vulnerability scanner
         env:
           OLLAMA_URL: ${{ secrets.OLLAMA_URL }}
-        run: python poc.py
+        run: |
+          python poc.py
+          echo "Scanner finished"

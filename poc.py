@@ -9,8 +9,9 @@ import subprocess
 import json
 import requests
 import sys
+import os
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 MODEL = "qwen2.5-coder:14b"
 
 ALLOWED_EXTENSIONS = [
@@ -172,6 +173,11 @@ def main():
     vulns = validate_and_clean(raw_vulns)
     print(json.dumps(vulns, indent=2, ensure_ascii=False))
 
+    if len(vulns) > 0:
+        print(f"\n[SECURITY] Vulnerabilities found: {len(vulns)}")
+        sys.exit(1)
+
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()

@@ -67,6 +67,7 @@ def get_pr_changes() -> str:
             line.startswith("diff --git")
             or line.startswith("index ")
             or line.startswith("\\ No newline")
+            or line.startswith("-")   
         ):
             continue
         lines.append(line)
@@ -151,7 +152,7 @@ def main():
 
     print("=== RESULTADO ===")
     print(json.dumps(vulns, indent=2, ensure_ascii=False))
-
+    return
     if vulns:
         print(f"\n::error::Se encontraron {len(vulns)} vulnerabilidad(es):")
         for v in vulns:

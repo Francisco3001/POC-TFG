@@ -72,7 +72,7 @@ def run_and_print(title, cmd):
 
     return result
 
-#asd #asd
+#asd #asd #asd
 def get_last_commit_diff() -> str:
     try:
         # Info general

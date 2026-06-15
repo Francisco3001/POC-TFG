@@ -74,85 +74,16 @@ def run_and_print(title, cmd):
 
 #asd #asd
 def get_last_commit_diff() -> str:
-    try:
-        # Info general
-        run_and_print(
-            "BRANCH",
-            ["git", "branch", "-a"]
-        )
+    result = subprocess.run(
+        ["git", "show", "--format=", "HEAD"],
+        capture_output=True,
+        text=True
+    )
 
-        run_and_print(
-            "STATUS",
-            ["git", "status"]
-        )
+    if result.returncode == 0:
+        return result.stdout
 
-        run_and_print(
-            "LAST 10 COMMITS",
-            ["git", "log", "--oneline", "-10"]
-        )
-
-        run_and_print(
-            "CURRENT HEAD",
-            ["git", "rev-parse", "HEAD"]
-        )
-
-        run_and_print(
-            "PARENT HEAD",
-            ["git", "rev-parse", "HEAD~1"]
-        )
-
-        # Método 1
-        diff1 = run_and_print(
-            "DIFF HEAD~1 HEAD",
-            ["git", "diff", "HEAD~1", "HEAD"]
-        )
-
-        # Método 2
-        diff2 = run_and_print(
-            "SHOW HEAD",
-            ["git", "show", "--format=", "HEAD"]
-        )
-
-        # Método 3
-        diff3 = run_and_print(
-            "SHOW HEAD NAME-ONLY",
-            ["git", "show", "--name-only", "HEAD"]
-        )
-
-        # Método 4
-        diff4 = run_and_print(
-            "DIFF-TREE",
-            ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"]
-        )
-
-        # Método 5
-        diff5 = run_and_print(
-            "SHOW HEAD~1..HEAD",
-            ["git", "show", "HEAD~1..HEAD"]
-        )
-
-        # Método 6
-        diff6 = run_and_print(
-            "LOG PATCH",
-            ["git", "log", "-p", "-1"]
-        )
-
-        # Método 7
-        diff7 = run_and_print(
-            "SHOW STAT",
-            ["git", "show", "--stat", "HEAD"]
-        )
-
-        # Devolver el primero que tenga contenido
-        for r in [diff1, diff2, diff5, diff6]:
-            if r.returncode == 0 and r.stdout.strip():
-                return r.stdout
-
-        return ""
-
-    except Exception as e:
-        print("ERROR OBTENIENDO DIFF:", e)
-        return ""
+    return ""
 
 
 def filter_diff(diff: str) -> str:

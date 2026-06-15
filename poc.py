@@ -152,7 +152,6 @@ def main():
 
     print("=== RESULTADO ===")
     print(json.dumps(vulns, indent=2, ensure_ascii=False))
-    return
     if vulns:
         print(f"\n::error::Se encontraron {len(vulns)} vulnerabilidad(es):")
         for v in vulns:

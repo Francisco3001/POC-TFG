@@ -38,7 +38,6 @@ Busca específicamente:
 DIFF A ANALIZAR:
 ```
 {diff}
-```
 
 Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin markdown, sin explicaciones.
 El formato debe ser exactamente este array JSON:
@@ -50,77 +49,43 @@ El formato debe ser exactamente este array JSON:
 Si no hay vulnerabilidades, responde con un array vacío: []
 """
 
-def run_and_print(title, cmd):
-    print(f"\n{'='*20} {title} {'='*20}")
-    print("CMD:", " ".join(cmd))
-
+def get_pr_changes() -> str:
     result = subprocess.run(
-        cmd,
+        ["git", "diff", "origin/main...HEAD", "--unified=0"],
         capture_output=True,
-        text=True
+        text=True,
+        encoding="utf-8"
     )
 
-    print("RETURN CODE:", result.returncode)
+    if result.returncode != 0:
+        print("::error::No se pudo obtener el diff de git")
+        sys.exit(1)
 
-    if result.stdout:
-        print("STDOUT:")
-        print(result.stdout)
+    lines = []
+    for line in result.stdout.splitlines():
+        if (
+            line.startswith("diff --git")
+            or line.startswith("index ")
+            or line.startswith("\\ No newline")
+        ):
+            continue
+        lines.append(line)
 
-    if result.stderr:
-        print("STDERR:")
-        print(result.stderr)
-
-    return result
-
-#asd #asd
-def get_last_commit_diff() -> str:
-    result = subprocess.run(
-        ["git", "show", "--format=", "HEAD"],
-        capture_output=True,
-        text=True
-    )
-
-    if result.returncode == 0:
-        return result.stdout
-
-    return ""
-
-
-def filter_diff(diff: str) -> str:
-    filtered = []
-    current_block = []
-    current_allowed = False
-
-    for line in diff.splitlines():
-        if line.startswith("diff --git "):
-            if current_allowed and current_block:
-                filtered.extend(current_block)
-            current_block = [line]
-            current_allowed = any(line.endswith(ext) for ext in ALLOWED_EXTENSIONS)
-        else:
-            # Descartar líneas eliminadas (no analizar código que ya no existe)
-            if not line.startswith("-"):
-                current_block.append(line)
-
-    if current_allowed and current_block:
-        filtered.extend(current_block)
-
-    return "\n".join(filtered)
+    return "\n".join(lines)
 
 
 def analyze_with_ollama(diff: str) -> list[dict]:
-    """Envía el diff al modelo local vía Ollama y parsea la respuesta JSON."""
-    if not diff:
-        return []
+    if not diff.strip():
+        print("No hay cambios para analizar.")
+        sys.exit(0)
 
     prompt = PROMPT_TEMPLATE.format(diff=diff)
-
     payload = {
         "model": MODEL,
         "prompt": prompt,
         "stream": False,
         "options": {
-            "temperature": 0.1,   # Baja temperatura para respuestas más consistentes
+            "temperature": 0.1,
             "top_p": 0.9,
             "num_predict": 2048,
         }
@@ -130,10 +95,13 @@ def analyze_with_ollama(diff: str) -> list[dict]:
         response = requests.post(OLLAMA_URL, json=payload, timeout=300)
         response.raise_for_status()
     except requests.exceptions.ConnectionError:
+        print("::error::No se pudo conectar a Ollama. Verificá OLLAMA_URL.")
         sys.exit(1)
     except requests.exceptions.Timeout:
+        print("::error::Timeout al conectar con Ollama.")
         sys.exit(1)
-    except requests.exceptions.HTTPError:
+    except requests.exceptions.HTTPError as e:
+        print(f"::error::Error HTTP de Ollama: {e}")
         sys.exit(1)
 
     raw = response.json().get("response", "").strip()
@@ -141,19 +109,16 @@ def analyze_with_ollama(diff: str) -> list[dict]:
 
 
 def parse_model_response(raw: str) -> list[dict]:
-    """Parsea la respuesta del modelo, tolerando texto extra alrededor del JSON."""
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
         pass
 
-    # Extraer el bloque JSON del texto (entre [ y ])
     start = raw.find("[")
     end = raw.rfind("]")
     if start != -1 and end != -1 and end > start:
-        candidate = raw[start:end + 1]
         try:
-            return json.loads(candidate)
+            return json.loads(raw[start:end + 1])
         except json.JSONDecodeError:
             pass
 
@@ -161,35 +126,43 @@ def parse_model_response(raw: str) -> list[dict]:
 
 
 def validate_and_clean(vulns: list) -> list[dict]:
-    """Valida y normaliza la estructura de cada vulnerabilidad."""
     clean = []
     for item in vulns:
         if not isinstance(item, dict):
             continue
-        vuln = {
+        linea = item.get("linea", 0)
+        clean.append({
             "vuln": str(item.get("vuln", "Desconocida")),
             "archivo": str(item.get("archivo", "desconocido")),
-            "linea": int(item.get("linea", 0)) if str(item.get("linea", "0")).isdigit() else 0
-        }
-        clean.append(vuln)
+            "linea": int(linea) if str(linea).isdigit() else 0
+        })
     return clean
 
 
 def main():
-    diff = get_last_commit_diff()
-    print("DIFF:")
+    diff = get_pr_changes()
+
+    print("=== DIFF A ANALIZAR ===")
     print(diff)
-    print("LEN:", len(diff))
-    diff = filter_diff(diff)
+    print(f"(Total: {len(diff)} caracteres)\n")
+
     raw_vulns = analyze_with_ollama(diff)
     vulns = validate_and_clean(raw_vulns)
+
+    print("=== RESULTADO ===")
     print(json.dumps(vulns, indent=2, ensure_ascii=False))
 
-    if len(vulns) > 0:
-        print(f"\n[SECURITY] Vulnerabilities found: {len(vulns)}")
-        sys.exit(1)
+    if vulns:
+        print(f"\n::error::Se encontraron {len(vulns)} vulnerabilidad(es):")
+        for v in vulns:
+            print(f"  - {v['vuln']} en {v['archivo']} (línea {v['linea']})")
+            # Anotación inline en el PR
+            print(f"::error file={v['archivo']},line={v['linea']}::{v['vuln']}")
+        sys.exit(1)  # ← Hace fallar el job de Actions
+    else:
+        print("\n✅ No se encontraron vulnerabilidades.")
+        sys.exit(0)
 
-    sys.exit(0)
 
 if __name__ == "__main__":
     main()

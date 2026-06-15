@@ -11,7 +11,12 @@ jobs:
       # 1. Clonar repo
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0      
+          
+      - name: Fetchear main
+        run: git fetch origin main:main   # ← sin esto origin/main no existe
+        
       # 2. Instalar Python
       - name: Setup Python
         uses: actions/setup-python@v5

@@ -50,41 +50,105 @@ El formato debe ser exactamente este array JSON:
 Si no hay vulnerabilidades, responde con un array vacío: []
 """
 
+def run_and_print(title, cmd):
+    print(f"\n{'='*20} {title} {'='*20}")
+    print("CMD:", " ".join(cmd))
+
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True
+    )
+
+    print("RETURN CODE:", result.returncode)
+
+    if result.stdout:
+        print("STDOUT:")
+        print(result.stdout)
+
+    if result.stderr:
+        print("STDERR:")
+        print(result.stderr)
+
+    return result
+
 
 def get_last_commit_diff() -> str:
-    """Obtiene el diff del último commit."""
-
     try:
-        # Debug útil para GitHub Actions
-        commits = subprocess.run(
-            ["git", "log", "--oneline", "-5"],
-            capture_output=True,
-            text=True
+        # Info general
+        run_and_print(
+            "BRANCH",
+            ["git", "branch", "-a"]
         )
 
-        print("COMMITS:")
-        print(commits.stdout)
-
-        # Diff último commit
-        result = subprocess.run(
-            ["git", "diff", "HEAD~1", "HEAD"],
-            capture_output=True,
-            text=True
+        run_and_print(
+            "STATUS",
+            ["git", "status"]
         )
 
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout
-
-        print("HEAD~1 no disponible o diff vacío")
-
-        # Fallback: mostrar contenido del commit actual
-        result = subprocess.run(
-            ["git", "show", "--format=", "HEAD"],
-            capture_output=True,
-            text=True
+        run_and_print(
+            "LAST 10 COMMITS",
+            ["git", "log", "--oneline", "-10"]
         )
 
-        return result.stdout
+        run_and_print(
+            "CURRENT HEAD",
+            ["git", "rev-parse", "HEAD"]
+        )
+
+        run_and_print(
+            "PARENT HEAD",
+            ["git", "rev-parse", "HEAD~1"]
+        )
+
+        # Método 1
+        diff1 = run_and_print(
+            "DIFF HEAD~1 HEAD",
+            ["git", "diff", "HEAD~1", "HEAD"]
+        )
+
+        # Método 2
+        diff2 = run_and_print(
+            "SHOW HEAD",
+            ["git", "show", "--format=", "HEAD"]
+        )
+
+        # Método 3
+        diff3 = run_and_print(
+            "SHOW HEAD NAME-ONLY",
+            ["git", "show", "--name-only", "HEAD"]
+        )
+
+        # Método 4
+        diff4 = run_and_print(
+            "DIFF-TREE",
+            ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"]
+        )
+
+        # Método 5
+        diff5 = run_and_print(
+            "SHOW HEAD~1..HEAD",
+            ["git", "show", "HEAD~1..HEAD"]
+        )
+
+        # Método 6
+        diff6 = run_and_print(
+            "LOG PATCH",
+            ["git", "log", "-p", "-1"]
+        )
+
+        # Método 7
+        diff7 = run_and_print(
+            "SHOW STAT",
+            ["git", "show", "--stat", "HEAD"]
+        )
+
+        # Devolver el primero que tenga contenido
+        for r in [diff1, diff2, diff5, diff6]:
+            if r.returncode == 0 and r.stdout.strip():
+                return r.stdout
+
+        return ""
 
     except Exception as e:
         print("ERROR OBTENIENDO DIFF:", e)

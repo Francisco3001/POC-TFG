@@ -50,7 +50,7 @@ El formato debe ser exactamente este array JSON:
 Si no hay vulnerabilidades, responde con un array vacío: []
 """
 
-def run_and_print(title, cmd):
+def run_and_print(title, cmd): #cambio cabio
     print(f"\n{'='*20} {title} {'='*20}")
     print("CMD:", " ".join(cmd))
 

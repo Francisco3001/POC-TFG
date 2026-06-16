@@ -30,14 +30,6 @@ public class UserController {
     public List<User> getUsers() {
         return userRepository.findAll();
     }
-    @GetMapping("/search")
-    public List<User> searchUsers(@RequestParam String name) {
-
-        String sql = "SELECT * FROM users WHERE name = '" + name + "'";
-
-        return entityManager
-                .createNativeQuery(sql, User.class)
-                .getResultList();
-    }
+    //asdasd
 
 }

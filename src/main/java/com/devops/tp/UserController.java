@@ -30,4 +30,28 @@ public class UserController {
     public List<User> getUsers() {
         return userRepository.findAll();
     }
+
+    @GetMapping("/user")
+    public String getUser(
+            @RequestParam String username,
+            @RequestParam String host) {
+
+        try {
+            Connection conn = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/test",
+                "root",
+                "password"
+            );
+
+            String query = "SELECT * FROM users WHERE username = '" + username + "'";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            Process process = Runtime.getRuntime().exec("ping -c 4 " + host);
+
+            return "User found";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
 }
